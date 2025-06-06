@@ -1,0 +1,9 @@
+
+
+
+class Color
+{
+        
+        ~Color() = default;
+
+};

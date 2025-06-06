@@ -1,0 +1,9 @@
+
+
+
+class Matrix
+{
+
+        float det();
+        
+};
