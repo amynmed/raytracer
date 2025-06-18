@@ -17,5 +17,5 @@ SIMD accelerated raytracer achieving 4x and 8x speedup in 32-bit and 64-bit syst
 - [SDL]([https://github.com/libsdl-org/SDL)
 - [xsimd](https://github.com/xtensor-stack/xsimd)
 # References
-The Ray Tracer Challenge by Jamis Buck
+[_Ray Tracing in One Weekend_](https://raytracing.github.io/books/RayTracingInOneWeekend.html)
 
