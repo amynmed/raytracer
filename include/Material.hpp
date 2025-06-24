@@ -7,7 +7,8 @@ enum class MATERIAL_TYPE
 {
         PHONG,
         BLINN,
-        LAMBERT
+        LAMBERT,
+        METAL
 };
 
 class Material

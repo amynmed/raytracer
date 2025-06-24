@@ -13,6 +13,7 @@ Color::Color(double r, double g, double b)
         assert(b<=1.0 && b>=0.0);
 
         m_normal_rgb = Vec3(r, g, b);
+        //m_normal_rgb = Vec3(linear_to_gamma(r), linear_to_gamma(g), linear_to_gamma(b));
 
         m_rgba.R = static_cast<uint8_t>(r * 255.);
         m_rgba.G = static_cast<uint8_t>(g * 255.);

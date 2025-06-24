@@ -48,7 +48,7 @@ class Renderer
         SDL_Texture *screen_texture;
 
         // AA
-        int m_samples_per_pixel = 10;
+        int m_samples_per_pixel = 100;
         double m_inverse_samples_per_pixel;
 
         int m_max_bounces = 250;
