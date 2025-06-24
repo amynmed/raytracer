@@ -96,25 +96,36 @@ Renderer::Renderer(const Viewport& viewport): m_viewport(viewport){}
         return color;
 } */
 
-Color Renderer::ray_color(const Ray& r, const MeshList& meshlist)
+Color Renderer::ray_color(const Ray& r, int bounces, const MeshList& meshlist)
 {
         // *** For debugging only
         // return Color( {0, 0, 0, 0} );
 
+        if (bounces <= 0)
+                return Color(0.,0.,0.);
+
         Intersection intersection;
 
-        if (meshlist.hit(r, Interval(0, INFINITY), intersection)) 
+        if (meshlist.hit(r, Interval(0.001, INFINITY), intersection)) 
         {
-                Vec3 rgb  = (intersection.normal + Vec3(1,1,1)) * 0.5;
+                //Vec3 rgb  = (intersection.normal + Vec3(1,1,1)) * 0.5;
 
                 /* rgb.print(); */
 
-                Color color(rgb);
+                //Color color(rgb);
 
                 /* color.print_normal_rgb(); */
 
+                // non-lambertian
+                //Vec3 direction = VecUtils::random_on_hemisphere(intersection.normal);
+                // Lambertian
+                Vec3 direction = intersection.normal + VecUtils::random_on_hemisphere(intersection.normal);
+                Vec3 rgb       = ray_color(Ray(intersection.p, direction), bounces-1, meshlist).normal_rgb() * 0.8;
 
-                return color;
+                return Color(rgb);
+
+
+                //return color;
         }
 
 
@@ -124,7 +135,7 @@ Color Renderer::ray_color(const Ray& r, const MeshList& meshlist)
 
         auto a = 0.5*(unit_direction.y() + 1.0);
 
-        Vec3 rgb = Vec3(0.3, 0.3, 1.0) * (1.0 - a) + Vec3(0.0, 0.2, 0.8) * a;
+        Vec3 rgb = Vec3(0.8, 0.8, 1.0) * (1.0 - a) + Vec3(0.2, 0.4, 0.9) * a;
 
         Color color(rgb);
 
@@ -252,7 +263,7 @@ void Renderer::render()
                         {
                                 // random ray of target inside (x, y) pixel
                                 Ray   r     = get_ray(x, y);
-                                Color color = ray_color(r, scene);
+                                Color color = ray_color(r, m_max_bounces, scene);
 
                                 /* color.print_normal_rgb();
                                 color.print_rgba(); */

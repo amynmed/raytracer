@@ -30,7 +30,7 @@ class Renderer
         Vec3 sample_square() const;
 
         Color ray_color(const Ray&);
-        Color ray_color(const Ray&, const MeshList&);
+        Color ray_color(const Ray&, int, const MeshList&);
 
          Renderer(const Viewport&);
          Renderer() = default;
@@ -50,6 +50,8 @@ class Renderer
         // AA
         int m_samples_per_pixel = 10;
         double m_inverse_samples_per_pixel;
+
+        int m_max_bounces = 250;
 
 };
 
