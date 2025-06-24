@@ -1,0 +1,6 @@
+[submodule "include/xsimd"]
+	path = include/xsimd
+	url = https://github.com/xtensor-stack/xsimd.git
+[submodule "include/SDL"]
+	path = include/SDL
+	url = https://github.com/libsdl-org/SDL.git

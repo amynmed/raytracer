@@ -1,0 +1,10 @@
+^C:\USERS\AMEEN\DOCUMENTS\SOFTDUNGEON\01\RAYTRACER\BUILD\CMAKEFILES\09B362137C150E1E86186A74B74F6FA7\GENERATE.STAMP.RULE
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/ameen/Documents/softdungeon/01/raytracer -BC:/Users/ameen/Documents/softdungeon/01/raytracer/build --check-stamp-list CMakeFiles/generate.stamp.list --vs-solution-file C:/Users/ameen/Documents/softdungeon/01/raytracer/build/raytracer.sln
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

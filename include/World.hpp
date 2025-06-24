@@ -1,7 +1,0 @@
-
-
-
-class World
-{
-        ~World() = default;
-};
