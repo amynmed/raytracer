@@ -16,10 +16,13 @@ set(SDL_STATIC ON)
 set(SDL_SHARED OFF)
 add_subdirectory(${SDL_SOURCE_DIR})
 
+set(SPDLOG_SOURCE_DIR ${CMAKE_SOURCE_DIR}/include/spdlog)
+add_subdirectory(${SPDLOG_SOURCE_DIR})
+
 
 add_executable(${PROJECT_NAME} main.cpp)
 
-target_link_libraries(${PROJECT_NAME} PRIVATE SDL3::SDL3-static)
+target_link_libraries(${PROJECT_NAME} PRIVATE SDL3::SDL3-static spdlog::spdlog_header_only)
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${INCLUDE_DIR})
 

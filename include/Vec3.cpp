@@ -62,30 +62,6 @@ Vec3 Vec3::operator/(double t) const
         return *this * (1/t);
 }
 
-inline Vec3 random_unit_vector() 
-{
-        // Rejection method
-        while (true) 
-        {
-                auto p = Vec3::random(-1,1);
-                auto lensq = p.squared_magnitude();
-                // we use this statement to avoid getting big vectors when normalising
-                if (1e-160 < lensq && lensq <= 1)
-                        return p / sqrt(lensq);
-                /* if (lensq <= 1)
-                        return p / sqrt(lensq); */
-        }
-}
-
-inline Vec3 random_on_hemisphere(const Vec3& normal) 
-{
-        Vec3 on_unit_sphere = random_unit_vector();
-
-        if (VecUtils::dot(on_unit_sphere, normal) > 0.0) // In the same hemisphere as the normal
-                return on_unit_sphere;
-        else
-                return -on_unit_sphere;
-}
 
 inline double Vec3::squared_magnitude() const
 {

@@ -45,6 +45,7 @@ class MeshList: public Mesh
                                 hit_anything   = true;
                                 closest_so_far = temp_rec.t;
                                 rec            = temp_rec;
+                                
                         }
                 }
 

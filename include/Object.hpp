@@ -3,6 +3,11 @@
 
 #include "Vec3.hpp"
 #include "Ray.hpp"
+//#include "Material.hpp"
+#include <memory>
+
+
+class Material;
 
 // intersection info
 class Intersection
@@ -12,6 +17,7 @@ class Intersection
         Vec3 normal;
         double t;
         bool front_face;
+        std::shared_ptr<Material> mat;
 
 
         void set_face_normal(const Ray& r, const Vec3& outward_normal) 

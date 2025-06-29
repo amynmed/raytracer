@@ -31,6 +31,7 @@ class Vec3
         inline double squared_magnitude() const;
         inline double magnitude() const;
         inline Vec3 normal(const Vec3&) const;
+        
         /* inline Vec3 random_unit_vector();
         inline Vec3 random_on_hemisphere(const Vec3&); */
 
@@ -42,6 +43,14 @@ class Vec3
         static Vec3 random(double min, double max) 
         {
                 return Vec3(random_double(min,max), random_double(min,max), random_double(min,max));
+        }
+
+        bool near_zero() const 
+        {
+                auto s = 1e-8;
+                return (std::fabs(m_x) < s) &&
+                       (std::fabs(m_y) < s) &&
+                       (std::fabs(m_z) < s);
         }
 
         void print() {printf("VECTOR (x:%.2f, y:%.2f, z:%.2f)\n", x(), y(), z());}
@@ -94,5 +103,11 @@ namespace VecUtils
                 else
                         return -on_unit_sphere;
         }
+
+        inline Vec3 reflect(const Vec3& v, const Vec3& n)
+        {
+                return v - n*VecUtils::dot(v,n)*2;
+        }
+
 
 }; // namespace VecUtils

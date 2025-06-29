@@ -37,5 +37,7 @@ bool Sphere::hit(const Ray& r, Interval interval, Intersection& intersection_inf
         Vec3 outward_normal = (intersection_info.p - m_position) / m_radius;
         intersection_info.set_face_normal(r, outward_normal);
 
+        intersection_info.mat = m_material;
+
         return true;
 }
