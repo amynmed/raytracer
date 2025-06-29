@@ -2,16 +2,21 @@
 
 #include "Renderer.hpp"
 #include "Vec3.hpp"
-
-#include "SDL3/SDL.h"
 #include "Sphere.hpp"
 #include "Ray.hpp"
 #include "Object.hpp"
 #include "MeshList.hpp"
 #include "Interval.hpp"
 #include "Utils.hpp"
+#include "Lambertian.hpp"
+#include "Metal.hpp"
 
+#include <spdlog/spdlog.h>
+#include <spdlog/async.h>
+#include <spdlog/sinks/stdout_color_sinks.h>
+#include "SDL3/SDL.h"
 #include "Windows.h"
+#include <chrono>
 
 Ray Renderer::get_ray(int i, int j) const 
 {
@@ -96,7 +101,7 @@ Renderer::Renderer(const Viewport& viewport): m_viewport(viewport){}
         return color;
 } */
 
-Color Renderer::ray_color(const Ray& r, int bounces, const MeshList& meshlist)
+Color Renderer::ray_color(const Ray& r, int bounces, const MeshList& mesh_list)
 {
         // *** For debugging only
         // return Color( {0, 0, 0, 0} );
@@ -106,7 +111,7 @@ Color Renderer::ray_color(const Ray& r, int bounces, const MeshList& meshlist)
 
         Intersection intersection;
 
-        if (meshlist.hit(r, Interval(0.001, INFINITY), intersection)) 
+        if (mesh_list.hit(r, Interval(0.001, INFINITY), intersection)) 
         {
                 //Vec3 rgb  = (intersection.normal + Vec3(1,1,1)) * 0.5;
 
@@ -119,10 +124,25 @@ Color Renderer::ray_color(const Ray& r, int bounces, const MeshList& meshlist)
                 // non-lambertian
                 //Vec3 direction = VecUtils::random_on_hemisphere(intersection.normal);
                 // Lambertian
-                Vec3 direction = intersection.normal + VecUtils::random_on_hemisphere(intersection.normal);
-                Vec3 rgb       = ray_color(Ray(intersection.p, direction), bounces-1, meshlist).normal_rgb() * 0.8;
+                /* Vec3 direction = intersection.normal + VecUtils::random_on_hemisphere(intersection.normal);
+                Vec3 rgb       = ray_color(Ray(intersection.p, direction), bounces-1, meshlist).normal_rgb() * 0.8; */
+                //return Color(rgb);
 
-                return Color(rgb);
+                Ray scattered;
+                Color attenuation;
+
+                if (intersection.mat->scatter(r, intersection, attenuation, scattered))
+                {
+                        Vec3 rgb     = ray_color(scattered, bounces-1, mesh_list).normal_rgb();
+                        Vec3 att_rgb = attenuation.normal_rgb();
+
+                        rgb *= att_rgb;
+
+                        return Color(rgb);
+                }
+
+                return Color(0,0,0);
+
 
 
                 //return color;
@@ -224,18 +244,46 @@ int Renderer::init(int screen_x, int screen_y)
 void Renderer::render()
 {
 
+        std::cout << "Rendering:" << std::endl;
+
+        auto async_render_logger = spdlog::stdout_color_mt<spdlog::async_factory>("async_logger");
+
+        // Set as default logger (optional)
+        // spdlog::set_default_logger(async_render_logger);
+
+        auto f = std::make_unique<spdlog::pattern_formatter>("%l %v", spdlog::pattern_time_type::local, std::string(""));  // disable eol
+
+        //async_render_logger->set_level(spdlog::level::info);
+        async_render_logger->set_pattern("%v");
+        async_render_logger->set_formatter(std::move(f));
+
+        
+
         bool running = true;
 
         SDL_Event e;
 
 
-        std::cout << "Rendering ..." << std::endl;
 
 
         MeshList scene;
 
-        scene.add(std::make_shared<Sphere>(Vec3(0, 0, -1), 0.5));
-        scene.add(std::make_shared<Sphere>(Vec3(0, -100.5, -1), 100));
+        auto material_ground = std::make_shared<Lambertian>(Color(0.8, 0.8, 0.8));
+        auto material_center = std::make_shared<Lambertian>(Color(0.9, 0.2, 0.0));
+        auto material_left   = std::make_shared<Metal>(Color(0.1, 0.3, 0.8));
+        auto material_right  = std::make_shared<Metal>(Color(0.2, 0.8, 0.2));
+
+        scene.add(std::make_shared<Sphere>(Vec3( 0.0, -100.5, -1.0), 100.0, material_ground));
+        scene.add(std::make_shared<Sphere>(Vec3( 0.0,    0.0, -1.2),   0.5, material_center));
+        scene.add(std::make_shared<Sphere>(Vec3(-1.0,    0.0, -1.0),   0.5, material_left));
+        scene.add(std::make_shared<Sphere>(Vec3( 1.0,    0.0, -1.0),   0.5, material_right));
+
+
+        // Start timer
+        auto start = std::chrono::high_resolution_clock::now();
+
+
+        
 
         // *** Replace with an update function 
         // Updating pixels
@@ -243,9 +291,13 @@ void Renderer::render()
         {
                 const size_t p = (int)(((double)y/screen_dims.second)*100);
 
-                std::string progress(p, '-');
+                std::string progress(p, '|');
 
-                std::cout << "\rScanlines remaining: " << ((double)y/screen_dims.second)*100 << progress << std::flush;
+                std::string percentage = fmt::format("{:.2f}", ((double)y/screen_dims.second)*100);
+
+                async_render_logger->info("\r[{}]{}", percentage, progress);
+
+                //std::cout << "\rScanlines remaining: " << ((double)y/screen_dims.second)*100 << progress << std::flush;
 
                 for (int x = 0; x < screen_dims.first; ++x) 
                 {
@@ -288,6 +340,12 @@ void Renderer::render()
         }
 
         std::cout << "Done." << std::endl;
+
+        auto end = std::chrono::high_resolution_clock::now();
+        auto elapsed_seconds = std::chrono::duration_cast<std::chrono::seconds>(end - start).count();
+        std::string elapsed_str = fmt::format("{}", elapsed_seconds);
+
+        async_render_logger->info("Elapsed: {}s", elapsed_str);
 
 
         while (running) 
