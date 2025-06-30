@@ -10,7 +10,7 @@
 
 // *TODO
 // ==================
-// - FIX COLOR CLASS
+// - FIX COLOR CLASS (add operations support)
 //
 // ==================
 
@@ -18,7 +18,7 @@ int main()
 {
         // FOR DEBUGGING
         constexpr double aspect_ratio = 4.0/3.0;
-        constexpr int screen_height   = 400;
+        constexpr int screen_height   = 500;
         constexpr int screen_width    = screen_height * aspect_ratio;
 
 
@@ -35,7 +35,7 @@ int main()
         Renderer renderer(viewport);
 
         renderer.init(screen_width, screen_height);
-        renderer.render();
+        renderer.threaded_render();
         
 
         

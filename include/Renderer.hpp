@@ -23,7 +23,10 @@ class Renderer
         void set_camera(Camera);
         void set_viewport(Viewport);
         void update();
+        void render_pixel(int, int, const MeshList&);
+        void render_row(int, int, const MeshList&);
         void render();
+        void threaded_render();
         void set_samples_per_pixel(unsigned n_samples) {m_samples_per_pixel = n_samples; }
 
         Ray get_ray(int i, int j) const;
@@ -38,14 +41,14 @@ class Renderer
 
         //
         private:
-        std::pair<int, int> screen_dims;
-        std::vector<RGBA> pixels;
+        std::pair<int, int> m_screen_dims;
+        std::vector<RGBA> m_pixels;
 
         const Viewport& m_viewport;
 
-        SDL_Window *window;
-        SDL_Renderer *renderer;
-        SDL_Texture *screen_texture;
+        SDL_Window *m_window;
+        SDL_Renderer *m_renderer;
+        SDL_Texture *m_screen_texture;
 
         // AA
         int m_samples_per_pixel = 50;
