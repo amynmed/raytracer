@@ -20,6 +20,8 @@
 #include "SDL3/SDL.h"
 #include "Windows.h"
 
+#include "ThreadManager.hpp"
+
 
 
 Ray Renderer::get_ray(int i, int j) const 
@@ -40,7 +42,7 @@ Ray Renderer::get_ray(int i, int j) const
 
 Vec3 Renderer::sample_square() const 
 {
-        // Returns the vector to a random point in the [-.5,-.5]-[+.5,+.5] unit square.
+        // Returns the vector to a random point in the unit square.
         return Vec3(random_double() - 0.5, random_double() - 0.5, 0);
 }
 
@@ -67,6 +69,8 @@ double hit_sphere(const Vec3& center, double radius, const Ray& r)
                 
         //return (discriminant >= 0);
 }
+
+//Renderer::Renderer(const Camera& camera): m_camera(camera){}
 
 Renderer::Renderer(const Viewport& viewport): m_viewport(viewport){}
 
@@ -147,11 +151,7 @@ Color Renderer::ray_color(const Ray& r, int bounces, const MeshList& mesh_list)
 
                 return Color(0,0,0);
 
-
-
-                //return color;
         }
-
 
         //return Color(0.85, 0.0, 0.0, 1.0);
 
@@ -189,53 +189,13 @@ int Renderer::init(int screen_x, int screen_y)
         m_pixels         = std::vector<RGBA>(screen_x*screen_y);
         m_window         = SDL_CreateWindow("raytracer", m_screen_dims.first, m_screen_dims.second, SDL_WINDOW_OPENGL);
         m_renderer       = SDL_CreateRenderer(m_window, NULL);
-        m_screen_texture = SDL_CreateTexture(m_renderer, SDL_PixelFormat::SDL_PIXELFORMAT_ABGR8888, SDL_TextureAccess::SDL_TEXTUREACCESS_STATIC, screen_x, screen_y);
+        m_screen_texture = SDL_CreateTexture(m_renderer, SDL_PixelFormat::SDL_PIXELFORMAT_ABGR8888,
+                                             SDL_TextureAccess::SDL_TEXTUREACCESS_STATIC,
+                                             screen_x,
+                                             screen_y);
 
         SDL_SetTextureBlendMode(m_screen_texture, SDL_BLENDMODE_BLEND);
 
-        
-
-        // Testing a random texture
-        /* for (int y = 0; y < screen_y; ++y) 
-        {
-                for (int x = 0; x < screen_x; ++x) 
-                {
-                        RGBA color;
-
-                        float px = (float)x / screen_x;
-                        float py = (float)y / screen_y;
-
-                          //std::cout << px << py << std::endl;
-
-                        float xclr = px * 255;
-                        float yclr = py * 255;
-
-                        color.R = static_cast<uint8_t>(xclr);
-                        color.G = static_cast<uint8_t>(yclr); 
-                        color.R = 0;
-                        color.G = 0;
-                        color.B = 200 - static_cast<uint8_t>(yclr * 0.5);
-                        color.A = 255;
-
-                        pixels[y * screen_x + x] = color;
-                }
-        } */
-        /* for (int y = 0; y < screen_y; ++y) 
-        {
-                for (int x = 0; x < screen_x; ++x) 
-                {
-                        RGBA color;
-
-                        color.R = x % 256;
-                        color.G = y % 256;
-                        color.B = (x + y * 2) % 256;
-                        color.A = 255;
-
-                        pixels[y * screen_x + x] = color;
-                }
-        } */
-
-        // SDL_UpdateTexture(screen_texture, nullptr, pixels.data(), screen_x * sizeof(RGBA));
 
         return 0;
 }
@@ -261,7 +221,6 @@ void Renderer::render_pixel(int x, int y, const MeshList& scene)
                 final_color += color.normal_rgb();
 
         }
-
         
         final_color *= m_inverse_samples_per_pixel;
 
@@ -272,17 +231,15 @@ void Renderer::render_pixel(int x, int y, const MeshList& scene)
 }
 
 // *** TODO
-void Renderer::render_row(int y, int row_width, const MeshList& scene)
+void Renderer::render_row(int row_index, const MeshList& scene)
 {
-        for(int x = 0; x < row_width; x++)
-        {
-                render_pixel(x, y, scene);
-        }
+        for(int x = 0; x < m_screen_dims.first; x++)
+                render_pixel(x, row_index, scene);
 }
 
 
 
-
+// Instead of having a seperate threaded render function use macros.
 void Renderer::render()
 {
 
@@ -299,19 +256,15 @@ void Renderer::render()
         async_render_logger->set_pattern("%v");
         async_render_logger->set_formatter(std::move(f));
 
-
-
         bool running = true;
 
         SDL_Event e;
-
-
 
         MeshList scene;
 
         auto material_ground = std::make_shared<Lambertian>(Color(0.8, 0.8, 0.8));
         auto material_center = std::make_shared<Lambertian>(Color(0.9, 0.2, 0.0));
-        auto material_left   = std::make_shared<Metal>(Color(0.1, 0.3, 0.8));
+        auto material_left   = std::make_shared<Dielectric>(1.50);
         auto material_right  = std::make_shared<Metal>(Color(0.2, 0.8, 0.2));
 
         scene.add(std::make_shared<Sphere>(Vec3( 0.0, -100.5, -1.0), 100.0, material_ground));
@@ -323,10 +276,7 @@ void Renderer::render()
         // Start timer
         auto start = std::chrono::high_resolution_clock::now();
 
-
         std::vector<std::future<void>> futures;
-
-        
 
         // *** Replace with an update function 
         // Updating pixels
@@ -340,29 +290,21 @@ void Renderer::render()
 
                 async_render_logger->info("\r[{}]{}", percentage, progress);
 
-                render_row(y, m_screen_dims.first, scene);
+                render_row(y, scene);
                 
         } 
 
-
-
         std::cout << "Done." << std::endl;
 
-        auto end = std::chrono::high_resolution_clock::now();
-        auto elapsed_seconds = std::chrono::duration_cast<std::chrono::seconds>(end - start).count();
-        std::string elapsed_str = fmt::format("{}", elapsed_seconds);
+        auto        end             = std::chrono::high_resolution_clock::now();
+        auto        elapsed_seconds = std::chrono::duration_cast<std::chrono::seconds>(end - start).count();
+        std::string elapsed_str     = fmt::format("{}", elapsed_seconds);
 
         async_render_logger->info("Elapsed: {}s", elapsed_str); 
-
-        bool done     = false;
-        bool time_msg = false;
-
-        size_t y_count = 0;
 
 
         while (running) 
         {
-
                 while (SDL_PollEvent(&e)) 
                 {
                         if (e.type == SDL_EVENT_QUIT) 
@@ -370,46 +312,6 @@ void Renderer::render()
                                 running = false;
                         }
                 }
-
-                const size_t p = (int)(((double)y_count/m_screen_dims.second)*100);
-
-                std::string progress(p, '|');
-
-                std::string percentage = fmt::format("{:.2f}", ((double)y_count/m_screen_dims.second)*100);
-
-                if(!done)
-                {
-                        async_render_logger->info("\r[{}]{}", percentage, progress);
-                }
-                
-
-                //render_row(y_count, m_screen_dims.first, scene);
-
-                futures.emplace_back(std::async(std::launch::async, [=, &scene]() {render_row(y_count, m_screen_dims.first, scene);}));
-
-                if(y_count < m_screen_dims.second - 1) 
-                        y_count++;
-                else 
-                        done = true;
-                
-
-                if(done && !time_msg)
-                {
-                        time_msg = !time_msg;
-
-                        std::cout << "Done." << std::endl;
-
-                        std::cout << std::endl << std::flush;
-
-                        auto        end             = std::chrono::high_resolution_clock::now();
-                        auto        elapsed_seconds = std::chrono::duration_cast<std::chrono::seconds>(end - start).count();
-                        std::string elapsed_str     = fmt::format("{}", elapsed_seconds);
-
-                        async_render_logger->info("Elapsed: {}s", elapsed_str);
-
-                }
-
-
 
                 SDL_UpdateTexture(m_screen_texture, nullptr, m_pixels.data(), m_screen_dims.first * sizeof(RGBA));
 
@@ -431,76 +333,44 @@ void Renderer::threaded_render()
 
         auto async_render_logger = spdlog::stdout_color_mt<spdlog::async_factory>("async_logger");
 
-        // Set as default logger (optional)
-        // spdlog::set_default_logger(async_render_logger);
-
         auto f = std::make_unique<spdlog::pattern_formatter>("%l %v", spdlog::pattern_time_type::local, std::string(""));  // disable eol
 
         //async_render_logger->set_level(spdlog::level::info);
         async_render_logger->set_pattern("%v");
         async_render_logger->set_formatter(std::move(f));
 
-        
-
-        bool running = true;
 
         SDL_Event e;
-
-
-
 
         MeshList scene;
 
         auto material_ground = std::make_shared<Lambertian>(Color(0.8, 0.8, 0.8));
-        auto material_center = std::make_shared<Lambertian>(Color(0.9, 0.2, 0.0));
-        auto material_left   = std::make_shared<Metal>(Color(0.1, 0.3, 0.8));
-        auto material_right  = std::make_shared<Metal>(Color(0.2, 0.8, 0.2));
+        auto material_center = std::make_shared<Lambertian>(Color(1.0, 0.2, 0.2));
+        auto material_left   = std::make_shared<Dielectric>(1.50);
+        auto material_bubble = std::make_shared<Dielectric>(1.00 / 1.50);
+        auto material_right  = std::make_shared<Metal>(Color(0.1, 0.8, 0.2), 0.25);
 
         scene.add(std::make_shared<Sphere>(Vec3( 0.0, -100.5, -1.0), 100.0, material_ground));
         scene.add(std::make_shared<Sphere>(Vec3( 0.0,    0.0, -1.2),   0.5, material_center));
         scene.add(std::make_shared<Sphere>(Vec3(-1.0,    0.0, -1.0),   0.5, material_left));
+        scene.add(std::make_shared<Sphere>(Vec3(-1.0,    0.0, -1.0),   0.4, material_bubble));
         scene.add(std::make_shared<Sphere>(Vec3( 1.0,    0.0, -1.0),   0.5, material_right));
-
 
         // Start timer
         auto start = std::chrono::high_resolution_clock::now();
 
-
+        ThreadManager thread_manager;
         std::vector<std::future<void>> futures;
 
-
-        
-
-        // *** Replace with an update function 
-        // Updating pixels
-        /* for (int y = 0; y < m_screen_dims.second; ++y) 
-        {
-                const size_t p = (int)(((double)y/m_screen_dims.second)*100);
-
-                std::string progress(p, '|');
-
-                std::string percentage = fmt::format("{:.2f}", ((double)y/m_screen_dims.second)*100);
-
-                async_render_logger->info("\r[{}]{}", percentage, progress);
-
-
-                render_row(y, m_screen_dims.first, scene);
-
-                //futures.emplace_back(std::async(std::launch::async, [=, &scene]() {render_row(y, m_screen_dims.first, scene);}));
-
-                
-        } */
-
-        // Wait for all tasks to finish
-        //for (auto& f : futures) f.get();
+        async_render_logger->info("-- MAX CONCURRENT THREADS: {}", thread_manager.max_threads());
 
         bool done            = false;
         bool time_msg        = false;
         bool thread_launched = false;
 
-
         size_t y_count = 0;
 
+        bool running = true;
 
         while (running) 
         {
@@ -524,10 +394,19 @@ void Renderer::threaded_render()
                         async_render_logger->info("\r[{}]{}", percentage, progress);
                 }
                 
+                // launch thread
+                // thread_manager limits the concurrent threads
+                // * FIND A BETTER WAY
+                // ==========================================
+                // ==========================================
+                thread_manager.acquire();
 
-                //render_row(y_count, m_screen_dims.first, scene);
-
-                futures.emplace_back(std::async(std::launch::async, [=, &scene]() {render_row(y_count, m_screen_dims.first, scene);}));
+                futures.emplace_back(std::async(std::launch::async, [=, &scene, &thread_manager]() 
+                {
+                        render_row(y_count, scene);
+                        thread_manager.release();
+                }
+                ));
 
                 if(y_count < m_screen_dims.second - 1) 
                         y_count++;
@@ -546,7 +425,6 @@ void Renderer::threaded_render()
                         time_msg = !time_msg;
 
                         std::cout << "Done." << std::endl;
-
                         std::cout << std::endl << std::flush;
 
                         auto        end             = std::chrono::high_resolution_clock::now();
@@ -556,12 +434,13 @@ void Renderer::threaded_render()
                         async_render_logger->info("Elapsed: {}s", elapsed_str);
 
                 }
-
+                // ==========================================
+                // ==========================================
 
 
                 SDL_UpdateTexture(m_screen_texture, nullptr, m_pixels.data(), m_screen_dims.first * sizeof(RGBA));
 
-                SDL_RenderClear(m_renderer);
+                SDL_RenderClear  (m_renderer);
                 SDL_RenderTexture(m_renderer, m_screen_texture, nullptr, nullptr);
                 SDL_RenderPresent(m_renderer);
         }

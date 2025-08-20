@@ -15,8 +15,7 @@
 
 class Renderer
 {
-        //
-        public:
+public:
         int init(int, int);
         void set_screen_dims(int, int);
         void set_world(Scene);
@@ -24,10 +23,11 @@ class Renderer
         void set_viewport(Viewport);
         void update();
         void render_pixel(int, int, const MeshList&);
-        void render_row(int, int, const MeshList&);
+        void render_row(int, const MeshList&);
+        void render(bool is_threaded); // 
         void render();
         void threaded_render();
-        void set_samples_per_pixel(unsigned n_samples) {m_samples_per_pixel = n_samples; }
+        void set_samples_per_pixel(unsigned n_samples) {m_samples_per_pixel = n_samples;}
 
         Ray get_ray(int i, int j) const;
         Vec3 sample_square() const;
@@ -35,15 +35,18 @@ class Renderer
         Color ray_color(const Ray&);
         Color ray_color(const Ray&, int, const MeshList&);
 
+         Renderer(const Camera&);
          Renderer(const Viewport&);
          Renderer() = default;
         ~Renderer() = default;
 
-        //
-        private:
+private:
+        // **TODO
+        //const Scene& scene;
         std::pair<int, int> m_screen_dims;
         std::vector<RGBA> m_pixels;
 
+        //const Camera& m_camera;
         const Viewport& m_viewport;
 
         SDL_Window *m_window;

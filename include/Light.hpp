@@ -4,6 +4,6 @@
 
 class Light: public Object
 {
-        private:
-        float luminosity;
+private:
+        float m_luminosity;
 };

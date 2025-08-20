@@ -8,7 +8,7 @@ class Interval
 {
 
 
-        public:
+public:
         double min, max;
 
         Interval() : min(+INFINITY), max(-INFINITY) {} 

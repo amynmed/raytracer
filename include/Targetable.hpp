@@ -5,13 +5,17 @@
 
 
 
-
+// **TODO
 class Targetable: public Object
 {
-        public:
+public:
 
 
-        private:
+private:
+
+
+protected:
+
 
 
 };

@@ -10,7 +10,7 @@
 
 class Vec3
 {
-        public:
+public:
         Vec3();
         Vec3(double, double, double);
 
@@ -56,7 +56,7 @@ class Vec3
         void print() {printf("VECTOR (x:%.2f, y:%.2f, z:%.2f)\n", x(), y(), z());}
 
 
-        private:
+private:
         double m_x, m_y, m_z;
 };
 
@@ -107,6 +107,15 @@ namespace VecUtils
         inline Vec3 reflect(const Vec3& v, const Vec3& n)
         {
                 return v - n*VecUtils::dot(v,n)*2;
+        }
+
+        inline Vec3 refract(const Vec3& uv, const Vec3& n, double eta_prime_ratio) 
+        {
+                auto cos_theta      = std::fmin(dot(-uv, n), 1.0);
+                Vec3 r_out_perp     = (uv + n * cos_theta) * eta_prime_ratio;
+                Vec3 r_out_parallel = n * (-std::sqrt(std::fabs(1.0 - r_out_perp.squared_magnitude()))) ;
+
+                return r_out_perp + r_out_parallel;
         }
 
 

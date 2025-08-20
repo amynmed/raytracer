@@ -12,7 +12,7 @@ class Material;
 // intersection info
 class Intersection
 {
-        public:
+public:
         Vec3 p;
         Vec3 normal;
         double t;
@@ -30,7 +30,7 @@ class Intersection
 
 class Object
 {
-        public:
+public:
         Vec3 get_position();
         void set_position(Vec3);
         void scale(float);
@@ -42,7 +42,7 @@ class Object
         Object() = default;
         ~Object() = default;
 
-        protected:
+protected:
         Vec3 m_position;
         Vec3 m_size;
 };

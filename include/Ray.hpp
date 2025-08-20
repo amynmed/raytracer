@@ -4,7 +4,7 @@
 
 class Ray
 {
-        public:
+public:
         const Vec3& origin() const;
         const Vec3& direction() const;
         
@@ -14,6 +14,6 @@ class Ray
 
         Vec3 position(double t) const;
 
-        private:
+private:
         Vec3 m_origin, m_direction;
 };

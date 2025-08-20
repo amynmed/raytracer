@@ -10,11 +10,11 @@
 class Sphere: public Mesh
 {
 
-        public:
+public:
         Sphere(Vec3 center, double radius, std::shared_ptr<Material> mat) : Mesh(center, mat), m_radius(std::fmax(0,radius)) {}
         bool hit(const Ray& r, Interval, Intersection& intersection_info) const override;
 
-        private:
+private:
         double m_radius;
 
 };

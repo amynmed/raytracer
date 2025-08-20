@@ -2,7 +2,9 @@
 #include "Sphere.hpp"
 
 
-
+// * FIND A WAY TO SIMD THIS
+// MAYBE CREATE A FUNCTION THAT TAKES A VECTOR OF RAYS (PACKET) THEN USE SIMD OPS
+// TO CALCULATE INTERSECTIONS ?
 bool Sphere::hit(const Ray& r, Interval interval, Intersection& intersection_info) const
 {
         Vec3 oc = m_position - r.origin();
@@ -22,12 +24,13 @@ bool Sphere::hit(const Ray& r, Interval interval, Intersection& intersection_inf
 
         // Find the nearest root that lies in the acceptable range.
         auto root = (h - sqrtd) / a;
+        
         if (!interval.surrounds(root)) 
         {
-            root = (h + sqrtd) / a;
+                root = (h + sqrtd) / a;
 
-            if (!interval.surrounds(root))
-                return false;
+                if (!interval.surrounds(root))
+                        return false;
         }
 
         intersection_info.t      = root;

@@ -8,14 +8,14 @@
 class Scene
 {
 
-        public:
+public:
         void add_object(Object &object);
 
          Scene() = default;
         ~Scene() = default;
 
 
-        private:
+private:
         std::vector<Object> objects;
         Camera active_camera;
         

@@ -5,7 +5,7 @@
 
 class Viewport
 {
-        public:
+public:
         const Vec3& camera_center() const {return m_camera_center;}
         const Vec3& corner_pixel()  const {return m_corner_pixel;}  
         const Vec3& upper_pixel()   const {return m_upper_left;}  
@@ -18,7 +18,7 @@ class Viewport
         ~Viewport() = default;
 
 
-        private:
+private:
         double m_height, m_width;
         Vec3 m_camera_center;
         Vec3 m_pixel_delta_u, m_pixel_delta_v;
