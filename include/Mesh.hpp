@@ -1,19 +1,25 @@
 #pragma once
 
-#include "Object.hpp"
-#include "Material.hpp"
 #include "Interval.hpp"
+#include "Material.hpp"
+#include "Object.hpp"
 
-class Mesh: public Object
+
+class Mesh : public Object
 {
 public:
-        Mesh(Vec3 position, std::shared_ptr<Material> material): Object(position), m_material(material){}
-        Mesh(Vec3 position): Object(position){}
-        Mesh() = default;
-        ~Mesh() = default;
+	Mesh(Vec3 position, std::shared_ptr<Material> material)
+	    : Object(position), m_material(material)
+	{}
         
-        virtual bool hit(const Ray& r, Interval, Intersection& intersection_info) const = 0;
+	Mesh(Vec3 position) : Object(position) {}
+
+	Mesh()  = default;
+	~Mesh() = default;
+
+	//
+	virtual bool hit(const Ray& r, Interval, Intersection& intersection_info) const = 0;
 
 protected:
-        std::shared_ptr<Material> m_material;
+	std::shared_ptr<Material> m_material;
 };

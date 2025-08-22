@@ -28,13 +28,12 @@ Ray Renderer::get_ray(int i, int j) const
 {
         // Get a random ray originating from camera center to a random position
         // inside the (i, j) pixel
-
         auto offset = sample_square();
-        auto pixel_sample = m_viewport.corner_pixel()
-                          + m_viewport.pixel_delta_u() * (i + offset.x()) 
-                          + m_viewport.pixel_delta_v() * (j + offset.y());
+        auto pixel_sample = m_camera.viewport().corner_pixel()
+                          + m_camera.viewport().pixel_delta_u() * (i + offset.x()) 
+                          + m_camera.viewport().pixel_delta_v() * (j + offset.y());
 
-        auto ray_origin    = m_viewport.camera_center();
+        auto ray_origin    = m_camera.viewport().camera_center();
         auto ray_direction = pixel_sample - ray_origin;
 
         return Ray(ray_origin, ray_direction);
@@ -55,14 +54,13 @@ double hit_sphere(const Vec3& center, double radius, const Ray& r)
         auto h = VecUtils::dot(r.direction(), oc);
         auto c = VecUtils::dot(oc, oc) - radius*radius;
 
-
         auto discriminant = h*h - a*c;
-
 
         if (discriminant < 0) 
         {
                 return -1.0;
-        } else 
+        } 
+        else 
         {
                 return (h - std::sqrt(discriminant) ) / a;
         }
@@ -70,9 +68,9 @@ double hit_sphere(const Vec3& center, double radius, const Ray& r)
         //return (discriminant >= 0);
 }
 
-//Renderer::Renderer(const Camera& camera): m_camera(camera){}
+Renderer::Renderer(const Camera& camera): m_camera(camera){}
 
-Renderer::Renderer(const Viewport& viewport): m_viewport(viewport){}
+//Renderer::Renderer(const Viewport& viewport): m_viewport(viewport){}
 
 
 /* Color Renderer::ray_color(const Ray& r)
@@ -203,10 +201,13 @@ int Renderer::init(int screen_x, int screen_y)
 
 void Renderer::render_pixel(int x, int y, const MeshList& scene)
 {
-        auto pixel_center  = m_viewport.corner_pixel() + (m_viewport.pixel_delta_u() * x) + (m_viewport.pixel_delta_v() * y);
-        auto ray_direction = pixel_center - m_viewport.camera_center();
+        auto pixel_center  = m_camera.viewport().corner_pixel()
+                           + m_camera.viewport().pixel_delta_u() * x
+                           + m_camera.viewport().pixel_delta_v() * y;
 
-        Ray r(m_viewport.camera_center(), ray_direction);
+        auto ray_direction = pixel_center - m_camera.viewport().camera_center();
+
+        Ray r(m_camera.viewport().camera_center(), ray_direction);
 
         Color pixel_color(0., 0., 0.);
 
@@ -219,13 +220,11 @@ void Renderer::render_pixel(int x, int y, const MeshList& scene)
                 Color color = ray_color(r, m_max_bounces, scene);
 
                 final_color += color.normal_rgb();
-
         }
         
         final_color *= m_inverse_samples_per_pixel;
 
         pixel_color = Color(final_color);
-
 
         m_pixels[y * m_screen_dims.first + x] = pixel_color.rgba();
 }
@@ -239,7 +238,7 @@ void Renderer::render_row(int row_index, const MeshList& scene)
 
 
 
-// Instead of having a seperate threaded render function use macros.
+// Find a better way instead of having a threaded and a non-threaded function.
 void Renderer::render()
 {
 
@@ -291,7 +290,6 @@ void Renderer::render()
                 async_render_logger->info("\r[{}]{}", percentage, progress);
 
                 render_row(y, scene);
-                
         } 
 
         std::cout << "Done." << std::endl;
@@ -314,15 +312,14 @@ void Renderer::render()
                 }
 
                 SDL_UpdateTexture(m_screen_texture, nullptr, m_pixels.data(), m_screen_dims.first * sizeof(RGBA));
-
-                SDL_RenderClear(m_renderer);
+                SDL_RenderClear  (m_renderer);
                 SDL_RenderTexture(m_renderer, m_screen_texture, nullptr, nullptr);
                 SDL_RenderPresent(m_renderer);
         }
 
-        SDL_DestroyTexture(m_screen_texture);
+        SDL_DestroyTexture (m_screen_texture);
         SDL_DestroyRenderer(m_renderer);
-        SDL_DestroyWindow(m_window);
+        SDL_DestroyWindow  (m_window);
         SDL_Quit();
 
 }
@@ -344,11 +341,11 @@ void Renderer::threaded_render()
 
         MeshList scene;
 
-        auto material_ground = std::make_shared<Lambertian>(Color(0.8, 0.8, 0.8));
-        auto material_center = std::make_shared<Lambertian>(Color(1.0, 0.2, 0.2));
+        auto material_ground = std::make_shared<Lambertian>(Color(0.7, 0.7, 0.7));
+        auto material_center = std::make_shared<Lambertian>(Color(1.0, 0.1, 0.1));
         auto material_left   = std::make_shared<Dielectric>(1.50);
         auto material_bubble = std::make_shared<Dielectric>(1.00 / 1.50);
-        auto material_right  = std::make_shared<Metal>(Color(0.1, 0.8, 0.2), 0.25);
+        auto material_right  = std::make_shared<Metal>(Color(0.1, 0.8, 0.2), 0.1);
 
         scene.add(std::make_shared<Sphere>(Vec3( 0.0, -100.5, -1.0), 100.0, material_ground));
         scene.add(std::make_shared<Sphere>(Vec3( 0.0,    0.0, -1.2),   0.5, material_center));
@@ -439,7 +436,6 @@ void Renderer::threaded_render()
 
 
                 SDL_UpdateTexture(m_screen_texture, nullptr, m_pixels.data(), m_screen_dims.first * sizeof(RGBA));
-
                 SDL_RenderClear  (m_renderer);
                 SDL_RenderTexture(m_renderer, m_screen_texture, nullptr, nullptr);
                 SDL_RenderPresent(m_renderer);
