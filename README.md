@@ -7,6 +7,15 @@
 # Description
 Minimal multithreaded raytracer.
 
+# Usage
+```
+mkdir build
+cd build
+cmake ..
+cmake --build .
+.\Debug\raytracer
+```
+
 # TODOs
 - [ ] Use SIMD intrinsics for better perf
 - [ ] Add Depth of field
