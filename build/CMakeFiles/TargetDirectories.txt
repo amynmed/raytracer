@@ -1,9 +1,0 @@
-C:/Users/ameen/Documents/softdungeon/01/raytracer/build/CMakeFiles/raytracer.dir
-C:/Users/ameen/Documents/softdungeon/01/raytracer/build/CMakeFiles/ALL_BUILD.dir
-C:/Users/ameen/Documents/softdungeon/01/raytracer/build/CMakeFiles/ZERO_CHECK.dir
-C:/Users/ameen/Documents/softdungeon/01/raytracer/build/include/SDL/CMakeFiles/SDL3-static.dir
-C:/Users/ameen/Documents/softdungeon/01/raytracer/build/include/SDL/CMakeFiles/SDL3_test.dir
-C:/Users/ameen/Documents/softdungeon/01/raytracer/build/include/SDL/CMakeFiles/SDL_uclibc.dir
-C:/Users/ameen/Documents/softdungeon/01/raytracer/build/include/SDL/CMakeFiles/ALL_BUILD.dir
-C:/Users/ameen/Documents/softdungeon/01/raytracer/build/include/spdlog/CMakeFiles/spdlog.dir
-C:/Users/ameen/Documents/softdungeon/01/raytracer/build/include/spdlog/CMakeFiles/ALL_BUILD.dir
