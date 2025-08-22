@@ -15,7 +15,6 @@ mkdir build
 cd build
 cmake ..
 cmake --build .
-.\Debug\raytracer
 ```
 
 # TODOs
