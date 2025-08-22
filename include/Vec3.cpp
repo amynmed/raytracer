@@ -67,19 +67,9 @@ Vec3 Vec3::operator/(double t) const
 	return *this * (1 / t);
 }
 
-inline double Vec3::squared_magnitude() const
-{
-	return SQR(m_x) + SQR(m_y) + SQR(m_z);
-}
-
-inline double Vec3::magnitude() const
-{
-	return std::sqrt(squared_magnitude());
-}
-
 Vec3 VecUtils::normal(const Vec3& v)
 {
-	return v / v.magnitude();
+        return v / v.magnitude();
 }
 
 /* inline Vec3 Vec3::normal(const Vec3& v) const

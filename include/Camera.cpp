@@ -21,9 +21,8 @@ void Camera::set_aspect_ratio(float aspect_ratio)
 } */
 
 Camera::Camera(Vec3 position, int screen_width, float aspect_ratio)
-    : m_screen_width(screen_width), m_aspect_ratio(aspect_ratio)
+    : Object(position), m_screen_width(screen_width), m_aspect_ratio(aspect_ratio)
 {
-	Object::Object(position);
 
 	m_w = VecUtils::normal(m_lookfrom - m_lookat);
 	m_u = VecUtils::normal(VecUtils::cross(m_vup, m_w));

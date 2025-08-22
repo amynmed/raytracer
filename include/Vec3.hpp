@@ -26,12 +26,9 @@ public:
 	void operator*=(const Vec3&);
 	void operator*=(double t);
 
-	inline double squared_magnitude() const;
-	inline double magnitude() const;
-	inline Vec3   normal(const Vec3&) const;
+	inline double squared_magnitude() const { return SQR(m_x) + SQR(m_y) + SQR(m_z); }
 
-	/* inline Vec3 random_unit_vector();
-	inline Vec3 random_on_hemisphere(const Vec3&); */
+	inline double magnitude() const { return std::sqrt(squared_magnitude()); }
 
 	static Vec3 random() { return Vec3(random_double(), random_double(), random_double()); }
 

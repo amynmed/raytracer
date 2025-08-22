@@ -3,7 +3,7 @@
 #include "Color.hpp"
 #include "Ray.hpp"
 #include "Object.hpp"
-
+#include "Vec3.hpp"
 
 
 enum class MATERIAL_TYPE

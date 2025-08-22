@@ -2,6 +2,7 @@
 
 #include "Object.hpp"
 #include "Viewport.hpp"
+#include "Vec3.hpp"
 
 // **TODO: extend Targetable class
 // ===============================
