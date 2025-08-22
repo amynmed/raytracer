@@ -2,6 +2,8 @@
 
 <p align="center">
   <img src="https://github.com/user-attachments/assets/d69898d0-3f02-4657-8210-a4103aa94596" width="380px"/>
+  <br/>
+  <sub>image created by me in figma</sub>
 </p>
 
 # Description
@@ -29,6 +31,8 @@ cmake --build .
 # 3rd-Party Libraries
 - [SDL]([https://github.com/libsdl-org/SDL)
 - [xsimd](https://github.com/xtensor-stack/xsimd)
+# Screenshots
+-
 # References
 [_Ray Tracing in One Weekend_](https://raytracing.github.io/books/RayTracingInOneWeekend.html)
 
